@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Wersatify
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<ion-list>
+  <ion-item *ngFor="let track of playlist" (click)="start(track)">
+    <ion-label [color]="track == activeTrack ? 'success' : 'dark'">{{ track.name }}</ion-label>
+  </ion-item>
+</ion-list>
+</ion-content>
+
+<ion-footer *ngIf="activeTrack">
+  <ion-toolbar>
+    <ion-row class="ion-text-center">
+      <ion-col size="12" class="ion-text-center">
+        {{ activeTrack.name }}
+      </ion-col>
+      <ion-col size="12">
+        <ion-range #range [(ngModel)]="progress" max="100" color="success" (touchend)="seek()" (mouseup)="seek()"></ion-range>
+      </ion-col>
+      <ion-col size="12">
+
+        <ion-button fill="clear" (click)="prev()">
+          <ion-icon slot="icon-only" name="play-skip-back"></ion-icon>
+        </ion-button>
+
+        <ion-button fill="clear" (click)="togglePlayer(false)" *ngIf="!isPlaying">
+          <ion-icon slot="icon-only" name="play"></ion-icon>
+        </ion-button>
+
+        <ion-button fill="clear" (click)="togglePlayer(true)" *ngIf="isPlaying">
+          <ion-icon slot="icon-only" name="pause"></ion-icon>
+        </ion-button>
+
+        <ion-button fill="clear" (click)="next()">
+          <ion-icon slot="icon-only" name="play-skip-forward"></ion-icon>
+        </ion-button>
+
+      </ion-col>
+    </ion-row>
+  </ion-toolbar>
+</ion-footer>
