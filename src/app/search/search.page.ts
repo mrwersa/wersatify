@@ -7,55 +7,65 @@ import { Storage } from '@ionic/storage-angular';
 @Component({
   selector: 'app-search',
   templateUrl: 'search.page.html',
-  styleUrls: ['search.page.scss']
+  styleUrls: ['search.page.scss'],
 })
 export class SearchPage implements OnInit {
   private videos: Video[] = [];
   private nextPageToken = '';
   private q = '';
 
-  constructor(private searchService: SearchService, private socket: Socket, private storage: Storage) { }
+  constructor(
+    private searchService: SearchService,
+    private socket: Socket,
+    private storage: Storage
+  ) {}
 
   async ngOnInit() {
     await this.storage.create();
     this.socket.connect();
 
-    this.socket.fromEvent('download-completed').subscribe(data => {
+    this.socket.fromEvent('download-completed').subscribe((data) => {
       console.log(data);
-      let itemIndex = this.videos.findIndex(video => video.videoId === data);
-      this.videos[itemIndex].status = "downloaded";
+      const itemIndex = this.videos.findIndex(
+        (video) => video.videoId === data
+      );
+      this.videos[itemIndex].status = 'downloaded';
     });
   }
 
-  handleSearch(inputValue: string) {
+  onSearch(inputValue: string) {
     this.q = inputValue;
     this.nextPageToken = '';
-    this.getVideos(false);
+    this.loadVideos(false);
   }
 
-  onDownload(videoId) {
+  onDownload(videoId: string) {
     this.socket.emit('start-download', videoId);
-    let itemIndex = this.videos.findIndex(video => video.videoId === videoId);
-    this.videos[itemIndex].status = "being-downloaded";
+    const itemIndex = this.videos.findIndex(
+      (video) => video.videoId === videoId
+    );
+    this.videos[itemIndex].status = 'being-downloaded';
   }
 
-  onLoadMore(event) {
+  onLoadMore(event: any) {
     if (this.q === null || this.q.length === 0) {
       event.target.complete();
     } else {
       setTimeout(() => {
-        this.getVideos(true, event);
+        this.loadVideos(true, event);
       }, 500);
     }
   }
 
-  getVideos(isLoadMore: boolean, event?: any) {
-    this.searchService.getVideos(this.q, this.nextPageToken)
-      .subscribe((response: any) => {
-        var newVideos: Video[] = []
+  private async loadVideos(isLoadMore: boolean, event?: any) {
+    // search for videos
+    this.searchService
+      .getVideos(this.q, this.nextPageToken)
+      .subscribe(async (response: any) => {
+        const newVideos: Video[] = [];
         if (Object.keys(response).length > 0) {
-          newVideos = response.items.map(item => {
-            return {
+          for (const item of response.items) {
+            newVideos.push({
               title: item.snippet.title,
               videoId: item.id.videoId,
               videoUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
@@ -65,11 +75,16 @@ export class SearchPage implements OnInit {
               description: item.snippet.description,
               publishedAt: new Date(item.snippet.publishedAt),
               thumbnail: item.snippet.thumbnails.high.url,
-              status: this.getVideoStatus(item.id.videoId)
-            };
-          });
+              status: (await this.storage.get(item.id.videoId))
+                ? 'downloaded'
+                : 'not-downloaded',
+            });
+          }
+
           this.nextPageToken = response.nextPageToken;
         }
+
+        // set results
         if (isLoadMore) {
           this.videos = this.videos.concat(newVideos);
           event.target.complete();
@@ -77,19 +92,5 @@ export class SearchPage implements OnInit {
           this.videos = newVideos;
         }
       });
-  }
-
-  getVideoStatus(videoId: string): string {
-    console.log(this.getVideoFileName(videoId));
-    if (this.getVideoFileName(videoId)) {
-      return "downloaded";
-    } else {
-      return "downloaded"
-    }
-  }
-  async getVideoFileName(videoId) {
-    let videoFileName = <string>await this.storage.get(videoId);
-    console.log(videoFileName);
-    return videoFileName;
   }
 }

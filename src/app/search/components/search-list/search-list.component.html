@@ -1,6 +1,5 @@
 <ion-list>
   <ion-item *ngFor="let video of videos; trackBy:videoTrackBy;">
-    <!-- [href]="video.videoUrl"> -->
     <ion-thumbnail slot="start">
       <ion-img [src]="video.thumbnail"></ion-img>
     </ion-thumbnail>
@@ -15,7 +14,6 @@
       <ion-button (click)="emitDownload(video.videoId)"
         [disabled]="video.status === 'being-downloaded' || video.status === 'downloaded'">
         <ion-icon name="arrow-down-outline" slot="end"></ion-icon>
-        {{ video.status }}
         <div [ngSwitch]="video.status">
           <div *ngSwitchCase="'being-downloaded'">
             Downloading
