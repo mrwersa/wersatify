@@ -1,16 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
 import { map } from 'rxjs/operators';
-import { Observable, EMPTY, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SearchService {
-  private API_URL = 'https://www.googleapis.com/youtube/v3/search';
-  private API_TOKEN = 'AIzaSyDWpTIymf_yKIauWK9rDSJ0jR84lwlKEhA';
-
   constructor(private http: HttpClient) { }
 
   getVideos(query: string, nextPageToken?: string): Observable<any> {
@@ -18,7 +15,7 @@ export class SearchService {
       return of({});
     }
 
-    var url = `${this.API_URL}?q=${query}&key=${this.API_TOKEN}&part=snippet&type=video&maxResults=10`;
+    let url = `${environment.youtubeApiUrl}?q=${query}&key=${environment.youtubeApiKey}&part=snippet&type=video&maxResults=10&videoDuration=medium`;
     if (nextPageToken) {
       url += `&pageToken=${nextPageToken}`
     }

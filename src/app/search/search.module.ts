@@ -6,7 +6,6 @@ import { SearchPage } from './search.page';
 import { SearchInputComponent } from './components/search-input/search-input.component';
 import { SearchListComponent } from './components/search-list/search-list.component';
 import { ExploreContainerComponentModule } from '../explore-container/explore-container.module';
-
 import { SearchPageRoutingModule } from './search-routing.module';
 
 @NgModule({
@@ -19,4 +18,4 @@ import { SearchPageRoutingModule } from './search-routing.module';
   ],
   declarations: [SearchPage, SearchInputComponent, SearchListComponent]
 })
-export class SearchPageModule {}
+export class SearchPageModule { }

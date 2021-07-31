@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-
 import { SearchListComponent } from './search-list.component';
 
 describe('SearchListComponent', () => {
@@ -9,7 +8,7 @@ describe('SearchListComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ SearchListComponent ],
+      declarations: [SearchListComponent],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 

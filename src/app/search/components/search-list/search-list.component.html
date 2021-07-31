@@ -11,20 +11,12 @@
       <ion-text color="secondary" class="ion-text-wrap">
         <p>{{ video.description }}</p>
       </ion-text>
+
       <ion-button (click)="emitDownload(video.videoId)"
-        [disabled]="video.status === 'being-downloaded' || video.status === 'downloaded'">
-        <ion-icon name="arrow-down-outline" slot="end"></ion-icon>
-        <div [ngSwitch]="video.status">
-          <div *ngSwitchCase="'being-downloaded'">
-            Downloading
-          </div>
-          <div *ngSwitchCase="'downloaded'">
-            Downloaded
-          </div>
-          <div *ngSwitchDefault>
-            Download
-          </div>
-        </div>
+        [disabled]="video.status === 'being-downloaded' || video.status === 'downloaded'" size="small" expand="full" shape="round"  color="dark">
+        <ion-icon name="cloud-download-outline" slot="end" *ngIf="video.status === 'not-downloaded'"></ion-icon>
+        <ion-icon name="cloud-done-outline" slot="end" *ngIf="video.status === 'downloaded'"></ion-icon>
+        <ion-spinner name="lines-small" slot="end" *ngIf="video.status === 'being-downloaded'"></ion-spinner>
       </ion-button>
     </ion-label>
   </ion-item>

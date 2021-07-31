@@ -1,6 +1,6 @@
-import {Component, ViewChild} from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { Howl } from 'howler';
-import {IonRange} from '@ionic/angular';
+import { IonRange } from '@ionic/angular';
 
 export interface Track {
   name: string;
@@ -14,11 +14,11 @@ export interface Track {
 })
 export class PlayPage {
 
-   playlist: Track[] = [
-      {
-        name: 'Bey T - If They Dunno',
-        path: './assets/mp3/audio1.mp3'
-      },
+  playlist: Track[] = [
+    {
+      name: 'Bey T - If They Dunno',
+      path: './assets/mp3/audio1.mp3'
+    },
     {
       name: 'Bey T - Just Admit It',
       path: './assets/mp3/audio2.mp3'
@@ -33,63 +33,63 @@ export class PlayPage {
     }
   ];
 
-   activeTrack: Track = null;
-   player: Howl = null;
-   isPlaying = false;
-   progress = 0;
-   @ViewChild('range', {static: false}) range: IonRange;
+  activeTrack: Track = null;
+  player: Howl = null;
+  isPlaying = false;
+  progress = 0;
+  @ViewChild('range', { static: false }) range: IonRange;
 
-  constructor() {}
+  constructor() { }
 
   start(track: Track) {
-      if (this.player) {
-          this.player.stop();
+    if (this.player) {
+      this.player.stop();
+    }
+    this.player = new Howl({
+      src: [track.path],
+      html5: true,
+      onplay: () => {
+        console.log('onplay');
+        this.isPlaying = true;
+        this.activeTrack = track;
+        this.updateProgress();
+      },
+      onend: () => {
+        console.log('onend');
       }
-      this.player = new Howl({
-          src: [track.path],
-          html5: true,
-          onplay: () => {
-              console.log('onplay');
-              this.isPlaying = true;
-              this.activeTrack = track;
-              this.updateProgress();
-          },
-          onend: () => {
-              console.log('onend');
-          }
-      });
-      this.player.play();
+    });
+    this.player.play();
   }
 
   togglePlayer(pause) {
-      this.isPlaying = !pause;
-      if (pause) {
-          console.log('playback paused');
-          this.player.pause();
-      } else {
-          console.log('playback resumed');
-          this.player.play();
-      }
+    this.isPlaying = !pause;
+    if (pause) {
+      console.log('playback paused');
+      this.player.pause();
+    } else {
+      console.log('playback resumed');
+      this.player.play();
+    }
   }
 
   next() {
-      console.log('next track');
-      const index = this.playlist.indexOf(this.activeTrack);
-      if (index !== this.playlist.length - 1) {
-          this.start(this.playlist[index + 1]);
-      } else {
-          this.start(this.playlist[0]);
-      }
+    console.log('next track');
+    const index = this.playlist.indexOf(this.activeTrack);
+    if (index !== this.playlist.length - 1) {
+      this.start(this.playlist[index + 1]);
+    } else {
+      this.start(this.playlist[0]);
+    }
   }
 
   prev() {
-      console.log('previous track');
-      const index = this.playlist.indexOf(this.activeTrack);
-      if (index > 0) {
-          this.start(this.playlist[index - 1]);
-      } else {
-          this.start(this.playlist[this.playlist.length - 1]);
-      }
+    console.log('previous track');
+    const index = this.playlist.indexOf(this.activeTrack);
+    if (index > 0) {
+      this.start(this.playlist[index - 1]);
+    } else {
+      this.start(this.playlist[this.playlist.length - 1]);
+    }
   }
 
   seek() {
@@ -99,11 +99,11 @@ export class PlayPage {
   }
 
   updateProgress() {
-      const seek = this.player.seek();
-      this.progress = (seek / this.player.duration()) * 100 || 0;
-      setTimeout(() => {
-          this.updateProgress();
-      }, 1000);
+    const seek = this.player.seek();
+    this.progress = (seek / this.player.duration()) * 100 || 0;
+    setTimeout(() => {
+      this.updateProgress();
+    }, 1000);
   }
 
 }

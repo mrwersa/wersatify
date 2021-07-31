@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { SearchService } from 'src/app/shared/services/search.service';
+import { FileService } from 'src/app/shared/services/file.service';
 import { Video } from 'src/app/shared/models/search';
 import { Socket } from 'ngx-socket-io';
-import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-search',
@@ -16,20 +16,36 @@ export class SearchPage implements OnInit {
 
   constructor(
     private searchService: SearchService,
-    private socket: Socket,
-    private storage: Storage
-  ) {}
+    private fileService: FileService,
+    private socket: Socket) { }
 
   async ngOnInit() {
-    await this.storage.create();
     this.socket.connect();
 
-    this.socket.fromEvent('download-completed').subscribe((data) => {
-      console.log(data);
+    this.socket.fromEvent('download-completed').subscribe((videoId: string) => {
+      console.log(videoId);
       const itemIndex = this.videos.findIndex(
-        (video) => video.videoId === data
+        (video) => video.videoId === videoId
       );
-      this.videos[itemIndex].status = 'downloaded';
+      if (itemIndex >= 0) {
+        this.videos[itemIndex].status = 'downloaded';
+      }
+
+      this.fileService.storeFile(videoId)
+        .then(FileEntry => {
+          this.fileService.setFileMetadata(videoId, `${videoId}.mp3`, 'downloaded');
+        })
+    });
+
+    this.socket.fromEvent('download-error').subscribe((videoId: string) => {
+      console.log(videoId);
+      const itemIndex = this.videos.findIndex(
+        (video) => video.videoId === videoId
+      );
+      if (itemIndex >= 0) {
+        this.videos[itemIndex].status = 'not-downloaded';
+      }
+      this.fileService.setFileMetadata(videoId, `${videoId}.mp3`, 'not-downloaded');
     });
   }
 
@@ -44,7 +60,12 @@ export class SearchPage implements OnInit {
     const itemIndex = this.videos.findIndex(
       (video) => video.videoId === videoId
     );
-    this.videos[itemIndex].status = 'being-downloaded';
+    if (itemIndex >= 0) {
+      this.videos[itemIndex].status = 'being-downloaded';
+    }
+    this.fileService.getFileMetadata(videoId).then(metadata => {
+      this.fileService.setFileMetadata(videoId, metadata ? metadata.name : "", 'being-downloaded');
+    })
   }
 
   onLoadMore(event: any) {
@@ -65,6 +86,8 @@ export class SearchPage implements OnInit {
         const newVideos: Video[] = [];
         if (Object.keys(response).length > 0) {
           for (const item of response.items) {
+            let metadata = await this.fileService.getFileMetadata(item.id.videoId)
+
             newVideos.push({
               title: item.snippet.title,
               videoId: item.id.videoId,
@@ -75,9 +98,7 @@ export class SearchPage implements OnInit {
               description: item.snippet.description,
               publishedAt: new Date(item.snippet.publishedAt),
               thumbnail: item.snippet.thumbnails.high.url,
-              status: (await this.storage.get(item.id.videoId))
-                ? 'downloaded'
-                : 'not-downloaded',
+              status: metadata ? metadata.status : 'not-downloaded',
             });
           }
 
