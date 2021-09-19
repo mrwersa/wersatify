@@ -15,7 +15,7 @@ export class SearchService {
       return of({});
     }
 
-    let url = `${environment.youtubeApiUrl}?q=${query}&key=${environment.youtubeApiKey}&part=snippet&type=video&maxResults=10&videoDuration=medium`;
+    let url = `${environment.youtubeApiUrl}?q=${query}&key=${environment.youtubeApiKey}&part=snippet&type=video&maxResults=10`;
     if (nextPageToken) {
       url += `&pageToken=${nextPageToken}`
     }

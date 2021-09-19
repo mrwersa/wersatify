@@ -32,8 +32,12 @@ export class SearchPage implements OnInit {
       }
 
       this.fileService.storeFile(videoId)
-        .then(FileEntry => {
-          this.fileService.setFileMetadata(videoId, `${videoId}.mp3`, 'downloaded');
+        .then(entry => {
+          console.log('download complete: ' + entry.toURL());
+          this.fileService.setFileMetadata(videoId, 'downloaded');
+        }, (error) => {
+          console.log("download error source " + error.source);
+          this.fileService.setFileMetadata(videoId, 'not-downloaded');
         })
     });
 
@@ -45,7 +49,7 @@ export class SearchPage implements OnInit {
       if (itemIndex >= 0) {
         this.videos[itemIndex].status = 'not-downloaded';
       }
-      this.fileService.setFileMetadata(videoId, `${videoId}.mp3`, 'not-downloaded');
+      this.fileService.setFileMetadata(videoId, 'not-downloaded');
     });
   }
 
@@ -63,9 +67,16 @@ export class SearchPage implements OnInit {
     if (itemIndex >= 0) {
       this.videos[itemIndex].status = 'being-downloaded';
     }
-    this.fileService.getFileMetadata(videoId).then(metadata => {
-      this.fileService.setFileMetadata(videoId, metadata ? metadata.name : "", 'being-downloaded');
-    })
+    this.fileService.setFileMetadata(videoId, 'being-downloaded');
+
+    (function () {
+      setTimeout(() => {
+        if (itemIndex >= 0) {
+          this.videos[itemIndex].status = 'not-downloaded';
+        }
+        this.fileService.setFileMetadata(videoId, 'not-downloaded');
+      }, 20000);
+    })();
   }
 
   onLoadMore(event: any) {

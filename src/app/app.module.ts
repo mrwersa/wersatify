@@ -9,6 +9,7 @@ import { environment } from 'src/environments/environment';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import { File } from '@ionic-native/file/ngx';
+import { FileTransfer } from '@ionic-native/file-transfer/ngx';
 
 const config: SocketIoConfig = { url: environment.socketIoUrl, options: {} };
 
@@ -28,7 +29,8 @@ const config: SocketIoConfig = { url: environment.socketIoUrl, options: {} };
       provide: RouteReuseStrategy,
       useClass: IonicRouteStrategy
     },
-    File
+    File,
+    FileTransfer
   ],
   bootstrap: [AppComponent],
 })
