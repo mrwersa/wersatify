@@ -13,6 +13,7 @@ export class SearchPage implements OnInit {
   private videos: Video[] = [];
   private nextPageToken = '';
   private q = '';
+  private socketConnected: boolean = false;
 
   constructor(
     private searchService: SearchService,
@@ -22,21 +23,34 @@ export class SearchPage implements OnInit {
   async ngOnInit() {
     this.socket.connect();
 
+    this.socket.on("connect", () => {
+      console.log("socket connected");
+      this.socketConnected = true;
+    });
+
+    this.socket.on("disconnect", () => {
+      console.log("socket disconnected");
+      this.socketConnected = false;
+    });
+
     this.socket.fromEvent('download-completed').subscribe((videoId: string) => {
-      console.log(videoId);
+      console.log("download completed: " + videoId);
       const itemIndex = this.videos.findIndex(
         (video) => video.videoId === videoId
       );
-      if (itemIndex >= 0) {
-        this.videos[itemIndex].status = 'downloaded';
-      }
 
       this.fileService.storeFile(videoId)
         .then(entry => {
-          console.log('download complete: ' + entry.toURL());
+          console.log('File saved: ' + entry.toURL());
+          if (itemIndex >= 0) {
+            this.videos[itemIndex].status = 'downloaded';
+          }    
           this.fileService.setFileMetadata(videoId, 'downloaded');
         }, (error) => {
-          console.log("download error source " + error.source);
+          console.log("Filed couldn't be saved: " + error.source);
+          if (itemIndex >= 0) {
+            this.videos[itemIndex].status = 'downloaded';
+          }    
           this.fileService.setFileMetadata(videoId, 'not-downloaded');
         })
     });
@@ -60,23 +74,17 @@ export class SearchPage implements OnInit {
   }
 
   onDownload(videoId: string) {
-    this.socket.emit('start-download', videoId);
     const itemIndex = this.videos.findIndex(
       (video) => video.videoId === videoId
     );
-    if (itemIndex >= 0) {
-      this.videos[itemIndex].status = 'being-downloaded';
-    }
-    this.fileService.setFileMetadata(videoId, 'being-downloaded');
 
-    (function () {
-      setTimeout(() => {
-        if (itemIndex >= 0) {
-          this.videos[itemIndex].status = 'not-downloaded';
-        }
-        this.fileService.setFileMetadata(videoId, 'not-downloaded');
-      }, 20000);
-    })();
+    if (this.socketConnected && itemIndex >= 0) {
+      this.videos[itemIndex].status = 'being-downloaded';
+      this.socket.emit('start-download', videoId);
+      this.fileService.setFileMetadata(videoId, 'being-downloaded');
+    } else {
+      // show error message
+    }
   }
 
   onLoadMore(event: any) {
