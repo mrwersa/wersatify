@@ -12,7 +12,7 @@
         <p>{{ video.description }}</p>
       </ion-text>
 
-      <ion-button (click)="emitDownload(video.videoId)"
+      <ion-button (click)="emitOnDownload(video.videoId)"
         [disabled]="video.status === 'being-downloaded' || video.status === 'downloaded'" size="small" expand="full" shape="round"  color="dark">
         <ion-icon name="cloud-download-outline" slot="end" *ngIf="video.status === 'not-downloaded'"></ion-icon>
         <ion-icon name="cloud-done-outline" slot="end" *ngIf="video.status === 'downloaded'"></ion-icon>
@@ -22,7 +22,7 @@
   </ion-item>
 </ion-list>
 
-<ion-infinite-scroll threshold="100px" (ionInfinite)="emitLoadMore($event)">
+<ion-infinite-scroll threshold="100px" (ionInfinite)="emitOnLoadMore($event)">
   <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more videos...">
   </ion-infinite-scroll-content>
 </ion-infinite-scroll>

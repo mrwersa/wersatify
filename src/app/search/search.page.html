@@ -1,10 +1,10 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <div class="spacer-searchbar-nav"></div>
-    <app-search-input (search)="onSearch($event)"></app-search-input>
+    <app-search-input (onSearch)="doSearch($event)"></app-search-input>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <app-search-list [videos]="videos" (loadMore)="onLoadMore($event)" (download)="onDownload($event)"></app-search-list>
+  <app-search-list [videos]="videos" (onLoadMore)="doLoadMore($event)" (onDownload)="doDownload($event)"></app-search-list>
 </ion-content>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -21,7 +21,9 @@ export class SearchService {
     }
     return this.http.get(url)
       .pipe(
-        map((response: any) => response)
+        catchError(error => {
+          return throwError(error);
+        })
       );
   }
 }

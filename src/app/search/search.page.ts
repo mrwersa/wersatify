@@ -14,6 +14,8 @@ export class SearchPage implements OnInit {
   private nextPageToken = '';
   private q = '';
   private socketConnected: boolean = false;
+  private searchTimeout;
+  private loadMoreTimeout;
 
   constructor(
     private searchService: SearchService,
@@ -44,13 +46,13 @@ export class SearchPage implements OnInit {
           console.log('File saved: ' + entry.toURL());
           if (itemIndex >= 0) {
             this.videos[itemIndex].status = 'downloaded';
-          }    
+          }
           this.fileService.setFileMetadata(videoId, 'downloaded');
         }, (error) => {
           console.log("Filed couldn't be saved: " + error.source);
           if (itemIndex >= 0) {
             this.videos[itemIndex].status = 'downloaded';
-          }    
+          }
           this.fileService.setFileMetadata(videoId, 'not-downloaded');
         })
     });
@@ -67,13 +69,21 @@ export class SearchPage implements OnInit {
     });
   }
 
-  onSearch(inputValue: string) {
+  doSearch(inputValue: string) {
     this.q = inputValue;
     this.nextPageToken = '';
-    this.loadVideos(false);
+
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    if (this.q === null || this.q.length === 0) {
+      this.videos = [];
+    } else {
+      this.searchTimeout = setTimeout(() => {
+        this.loadVideos(false);
+      }, 1000);
+    }
   }
 
-  onDownload(videoId: string) {
+  doDownload(videoId: string) {
     const itemIndex = this.videos.findIndex(
       (video) => video.videoId === videoId
     );
@@ -87,13 +97,15 @@ export class SearchPage implements OnInit {
     }
   }
 
-  onLoadMore(event: any) {
+  doLoadMore(event: any) {
+    if (this.loadMoreTimeout) clearTimeout(this.loadMoreTimeout);
+
     if (this.q === null || this.q.length === 0) {
       event.target.complete();
     } else {
-      setTimeout(() => {
+      this.loadMoreTimeout = setTimeout(() => {
         this.loadVideos(true, event);
-      }, 500);
+      }, 1000);
     }
   }
 
@@ -101,36 +113,40 @@ export class SearchPage implements OnInit {
     // search for videos
     this.searchService
       .getVideos(this.q, this.nextPageToken)
-      .subscribe(async (response: any) => {
-        const newVideos: Video[] = [];
-        if (Object.keys(response).length > 0) {
-          for (const item of response.items) {
-            let metadata = await this.fileService.getFileMetadata(item.id.videoId)
+      .subscribe(
+        // response
+        async (response) => {
+          const newVideos: Video[] = [];
+          if (Object.keys(response).length > 0) {
+            for (const item of response.items) {
+              let metadata = await this.fileService.getFileMetadata(item.id.videoId)
 
-            newVideos.push({
-              title: item.snippet.title,
-              videoId: item.id.videoId,
-              videoUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-              channelId: item.snippet.channelId,
-              channelUrl: `https://www.youtube.com/channel/${item.snippet.channelId}`,
-              channelTitle: item.snippet.channelTitle,
-              description: item.snippet.description,
-              publishedAt: new Date(item.snippet.publishedAt),
-              thumbnail: item.snippet.thumbnails.high.url,
-              status: metadata ? metadata.status : 'not-downloaded',
-            });
+              newVideos.push({
+                title: item.snippet.title,
+                videoId: item.id.videoId,
+                videoUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                channelId: item.snippet.channelId,
+                channelUrl: `https://www.youtube.com/channel/${item.snippet.channelId}`,
+                channelTitle: item.snippet.channelTitle,
+                description: item.snippet.description,
+                publishedAt: new Date(item.snippet.publishedAt),
+                thumbnail: item.snippet.thumbnails.high.url,
+                status: metadata ? metadata.status : 'not-downloaded',
+              });
+            }
+
+            this.nextPageToken = response.nextPageToken;
           }
 
-          this.nextPageToken = response.nextPageToken;
-        }
-
-        // set results
-        if (isLoadMore) {
-          this.videos = this.videos.concat(newVideos);
-          event.target.complete();
-        } else {
-          this.videos = newVideos;
-        }
-      });
+          // set results
+          if (isLoadMore) {
+            this.videos = this.videos.concat(newVideos);
+            event.target.complete();
+          } else {
+            this.videos = newVideos;
+          }
+        },
+        // error
+        error => console.log('HTTP Error', error));
   }
 }

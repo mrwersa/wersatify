@@ -8,15 +8,15 @@ import { Video } from '../../../shared/models/search';
 })
 export class SearchListComponent {
   @Input() videos: Video[];
-  @Output() loadMore: EventEmitter<string> = new EventEmitter<string>();
-  @Output() download: EventEmitter<string> = new EventEmitter<string>();
+  @Output() onLoadMore: EventEmitter<string> = new EventEmitter<string>();
+  @Output() onDownload: EventEmitter<string> = new EventEmitter<string>();
 
-  emitLoadMore(event) {
-    this.loadMore.emit(event);
+  emitOnLoadMore(event) {
+    this.onLoadMore.emit(event);
   }
 
-  emitDownload(videoId) {
-    this.download.emit(videoId);
+  emitOnDownload(videoId) {
+    this.onDownload.emit(videoId);
   }
 
   videoTrackBy(index: number, video: Video) {

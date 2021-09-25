@@ -6,9 +6,9 @@ import { Component, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./search-input.component.scss'],
 })
 export class SearchInputComponent {
-  @Output() search: EventEmitter<string> = new EventEmitter<string>();
+  @Output() onSearch: EventEmitter<string> = new EventEmitter<string>();
 
-  emitSearch(event) {
-    this.search.emit(event.detail.value);
+  emitOnSearch(event) {
+    this.onSearch.emit(event.detail.value);
   }
 }
